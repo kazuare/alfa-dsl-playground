@@ -50,8 +50,4 @@ class PolicySet(
     fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit = {}) = evaluateables.add(PolicySet(name, algorithm).apply(init))
 }
 
-fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit = {}): PolicySet {
-    val result = PolicySet(name, algorithm)
-    result.init()
-    return result
-}
+fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit = {}) = PolicySet(name, algorithm).apply(init)

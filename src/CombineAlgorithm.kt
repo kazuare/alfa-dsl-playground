@@ -1,4 +1,3 @@
-
 enum class CombineAlgorithm(val evaluate: (list: List<Evaluateable>, attributes: Attributes) -> Boolean?) {
     FirstApplicable({ list, attributes ->
         var result: Boolean? = null

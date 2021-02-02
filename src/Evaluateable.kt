@@ -4,6 +4,10 @@ typealias TargetEvaluator = Attributes.() -> Boolean
 // unsolved questions
 // how to do mandatory parameters
 
+@DslMarker
+annotation class AlfaDslEntity
+
+@AlfaDslEntity
 open class Evaluateable(var target: TargetEvaluator, var evaluateAction: ResponseEvaluator) {
     fun evaluate(attributes: Attributes): Boolean? {
         if (!target(attributes)) {

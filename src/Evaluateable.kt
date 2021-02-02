@@ -35,7 +35,7 @@ class Policy(
     val evaluateables: MutableList<Rule> = mutableListOf()
 ) : PolicyOrSet(name, algorithm, target, evaluateables) {
 
-    fun rule(ruleType: RuleType, init: Rule.() -> Unit) = evaluateables.add(Rule(ruleType).apply(init))
+    fun rule(ruleType: RuleType, init: Rule.() -> Unit = {}) = evaluateables.add(Rule(ruleType).apply(init))
 }
 
 class PolicySet(
@@ -45,12 +45,12 @@ class PolicySet(
     val evaluateables: MutableList<PolicyOrSet> = mutableListOf()
 ) : PolicyOrSet(name, algorithm, target, evaluateables) {
 
-    fun policy(name: String, algorithm: CombineAlgorithm, init: Policy.() -> Unit) = evaluateables.add(Policy(name, algorithm).apply(init))
+    fun policy(name: String, algorithm: CombineAlgorithm, init: Policy.() -> Unit = {}) = evaluateables.add(Policy(name, algorithm).apply(init))
 
-    fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit) = evaluateables.add(PolicySet(name, algorithm).apply(init))
+    fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit = {}) = evaluateables.add(PolicySet(name, algorithm).apply(init))
 }
 
-fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit): PolicySet {
+fun policySet(name: String, algorithm: CombineAlgorithm, init: PolicySet.() -> Unit = {}): PolicySet {
     val result = PolicySet(name, algorithm)
     result.init()
     return result

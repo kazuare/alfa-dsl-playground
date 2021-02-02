@@ -3,21 +3,29 @@ import RuleType.*
 
 fun main() {
     val attributes = Attributes(
-        login = "user@mail.com",
-        active = true,
-        function = "support"
+        UserAttributes(
+            login = "user@mail.com",
+            active = true,
+            function = "support"
+        )
     )
 
-    val root = policySet("Root", FirstApplicable) {
-        policySet("NestedPolicy", FirstApplicable) {
-            policy("ActualPolicy", DenyUnlessPermit) {
-                target = { active == true && function == "support" }
-                rule(Permit) {
-                    target = { login == "user@mail.com" }
+    val root =
+        policySet("Root", FirstApplicable) {
+            policySet("NestedPolicy", FirstApplicable) {
+                policy("NotApplicablePolicy", DenyUnlessPermit) {
+                    target = { user.function == "external" }
+                    rule(Deny)
+                }
+
+                policy("ActualPolicy", DenyUnlessPermit) {
+                    target = { user.active == true && user.function == "support" }
+                    rule(Permit) {
+                        target = { user.login == "user@mail.com" }
+                    }
                 }
             }
         }
-    }
 
     print(root.evaluate(attributes))
 }

@@ -1,28 +1,23 @@
-typealias ResponseEvaluator = Attributes.() -> Decision
-typealias TargetEvaluator = Attributes.() -> Boolean
 
 // unsolved questions
 // how to do mandatory parameters
-// method overloading in order to avoid lambdas and use something analyzeable instead
-// support decisions
-
-enum class Decision {
-    Permit,
-    Deny,
-    NotApplicable;
-}
 
 @DslMarker
 annotation class AlfaDslEntity
 
+enum class CombineAlgorithm {
+    FirstApplicable,
+    PermitUnlessDeny,
+    DenyUnlessPermit
+}
+
+
 @AlfaDslEntity
-open class Evaluateable(var target: TargetEvaluator, var evaluateAction: ResponseEvaluator) {
-    fun evaluate(attributes: Attributes): Decision {
-        if (!target(attributes)) {
-            return Decision.NotApplicable
-        }
-        return evaluateAction(attributes)
-    }
+open class Evaluateable(var target: BooleanExpression) {
+    val user = UserAttributes(
+        StringExpression(),
+        StringExpression(),
+        BooleanExpression())
 }
 
 enum class RuleType {
@@ -30,22 +25,21 @@ enum class RuleType {
     Deny;
 }
 
-class Rule(var ruleType: RuleType, target: TargetEvaluator? = null) :
-    Evaluateable(target ?: { true }, { if(ruleType == RuleType.Permit) Decision.Permit else Decision.Deny })
+class Rule(var ruleType: RuleType, target: BooleanExpression? = null) :
+    Evaluateable(target ?: True)
 
 abstract class PolicyOrSet(
     val name: String,
     algorithm: CombineAlgorithm,
-    target: TargetEvaluator,
-    evaluateables: List<Evaluateable>
-) : Evaluateable(target, { algorithm.evaluate(evaluateables, this) })
+    target: BooleanExpression
+) : Evaluateable(target)
 
 class Policy(
     name: String,
     algorithm: CombineAlgorithm,
-    target: TargetEvaluator = { true },
+    target: BooleanExpression = True,
     val evaluateables: MutableList<Rule> = mutableListOf()
-) : PolicyOrSet(name, algorithm, target, evaluateables) {
+) : PolicyOrSet(name, algorithm, target) {
 
     fun rule(ruleType: RuleType, init: Rule.() -> Unit = {}) = evaluateables.add(Rule(ruleType).apply(init))
 }
@@ -53,9 +47,9 @@ class Policy(
 class PolicySet(
     name: String,
     algorithm: CombineAlgorithm,
-    target: TargetEvaluator = { true },
+    target: BooleanExpression = True,
     val evaluateables: MutableList<PolicyOrSet> = mutableListOf()
-) : PolicyOrSet(name, algorithm, target, evaluateables) {
+) : PolicyOrSet(name, algorithm, target) {
 
     fun policy(name: String, algorithm: CombineAlgorithm, init: Policy.() -> Unit = {}) = evaluateables.add(Policy(name, algorithm).apply(init))
 

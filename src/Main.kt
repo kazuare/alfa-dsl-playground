@@ -2,30 +2,19 @@ import CombineAlgorithm.*
 import RuleType.*
 
 fun main() {
-    val attributes = Attributes(
-        UserAttributes(
-            login = "user@mail.com",
-            active = true,
-            function = "support"
-        )
-    )
+    policySet("Root", FirstApplicable) {
+        policySet("NestedPolicy", FirstApplicable) {
+            policy("NotApplicablePolicy", DenyUnlessPermit) {
+                target = user.function equals "support"
+                rule(Deny)
+            }
 
-    val root =
-        policySet("Root", FirstApplicable) {
-            policySet("NestedPolicy", FirstApplicable) {
-                policy("NotApplicablePolicy", DenyUnlessPermit) {
-                    target = { user.function != "support" }
-                    rule(Deny)
-                }
-
-                policy("ActualPolicy", DenyUnlessPermit) {
-                    target = { user.active == true }
-                    rule(Permit) {
-                        target = { user.login == "user@mail.com" }
-                    }
+            policy("ActualPolicy", DenyUnlessPermit) {
+                target = user.active equals false
+                rule(Permit) {
+                    target = user.login equals "user@mail.com"
                 }
             }
         }
-
-    print(root.evaluate(attributes))
+    }
 }

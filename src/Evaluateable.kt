@@ -1,17 +1,25 @@
-typealias ResponseEvaluator = Attributes.() -> Boolean?
+typealias ResponseEvaluator = Attributes.() -> Decision
 typealias TargetEvaluator = Attributes.() -> Boolean
 
 // unsolved questions
 // how to do mandatory parameters
+// method overloading in order to avoid lambdas and use something analyzeable instead
+// support decisions
+
+enum class Decision {
+    Permit,
+    Deny,
+    NotApplicable;
+}
 
 @DslMarker
 annotation class AlfaDslEntity
 
 @AlfaDslEntity
 open class Evaluateable(var target: TargetEvaluator, var evaluateAction: ResponseEvaluator) {
-    fun evaluate(attributes: Attributes): Boolean? {
+    fun evaluate(attributes: Attributes): Decision {
         if (!target(attributes)) {
-            return null
+            return Decision.NotApplicable
         }
         return evaluateAction(attributes)
     }
@@ -23,7 +31,7 @@ enum class RuleType {
 }
 
 class Rule(var ruleType: RuleType, target: TargetEvaluator? = null) :
-    Evaluateable(target ?: { true }, { ruleType == RuleType.Permit })
+    Evaluateable(target ?: { true }, { if(ruleType == RuleType.Permit) Decision.Permit else Decision.Deny })
 
 abstract class PolicyOrSet(
     val name: String,

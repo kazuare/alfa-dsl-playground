@@ -1,32 +1,17 @@
-enum class CombineAlgorithm(val evaluate: (list: List<Evaluateable>, attributes: Attributes) -> Boolean?) {
-    FirstApplicable({ list, attributes ->
-        var result: Boolean? = null
-        for (item in list) {
-            result = item.evaluate(attributes)
-            if (result != null) {
-                break
-            }
+import Decision.*
+
+enum class CombineAlgorithm(val evaluate: (evaluateables: List<Evaluateable>, attributes: Attributes) -> Decision) {
+    FirstApplicable({ evaluateables, attributes -> combineBase(evaluateables, attributes, NotApplicable, listOf(Deny, Permit)) }),
+    PermitUnlessDeny({ evaluateables, attributes -> combineBase(evaluateables, attributes, Permit, listOf(Deny)) }),
+    DenyUnlessPermit({ evaluateables, attributes -> combineBase(evaluateables, attributes, Deny, listOf(Permit)) })
+}
+
+fun combineBase(evaluateables: List<Evaluateable>, attributes: Attributes, initialDecision: Decision, stopDecisions: List<Decision>): Decision {
+    for (item in evaluateables) {
+        val result = item.evaluate(attributes)
+        if (stopDecisions.contains(result)) {
+            return result
         }
-        result
-    }),
-    PermitUnlessDeny({ list, attributes ->
-        var result = true
-        for (item in list) {
-            if (item.evaluate(attributes) == false) {
-                result = false
-                break
-            }
-        }
-        result
-    }),
-    DenyUnlessPermit({ list, attributes ->
-        var result = false
-        for (item in list) {
-            if (item.evaluate(attributes) == true) {
-                result = true
-                break
-            }
-        }
-        result
-    })
+    }
+    return initialDecision
 }

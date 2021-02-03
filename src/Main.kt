@@ -14,12 +14,12 @@ fun main() {
         policySet("Root", FirstApplicable) {
             policySet("NestedPolicy", FirstApplicable) {
                 policy("NotApplicablePolicy", DenyUnlessPermit) {
-                    target = { user.function == "external" }
+                    target = { user.function != "support" }
                     rule(Deny)
                 }
 
                 policy("ActualPolicy", DenyUnlessPermit) {
-                    target = { user.active == true && user.function == "support" }
+                    target = { user.active == true }
                     rule(Permit) {
                         target = { user.login == "user@mail.com" }
                     }
